@@ -6,7 +6,7 @@ gemspec
 # gem "xdr", path: "../ruby-xdr"
 
 group :development do
-  gem "xdrgen", git: "https://github.com/stellar/xdrgen.git"
+  gem "xdrgen", git: "https://github.com/stellar/xdrgen.git", ref: "0b3397e"
   # gem "xdrgen", path: "../xdrgen"
   gem "pry"
   gem "faraday"
