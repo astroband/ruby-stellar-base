@@ -62,6 +62,11 @@ describe Stellar::Operation, ".change_trust" do
     expect(op.body.value.limit).to eq(12347500000)
   end
 
+  it "creates a ChangeTrustOp with nil limit" do
+    op = Stellar::Operation.change_trust(line: [:alphanum4, "USD", issuer], limit: nil)
+    expect(op.body.value.limit).to eq Stellar::Operation::MAX_INT64
+  end
+
   it "throws ArgumentError for incorrect limit argument" do
     expect {
       Stellar::Operation.change_trust(line: [:alphanum4, "USD", issuer], limit: true)

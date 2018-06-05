@@ -130,7 +130,11 @@ module Stellar
         line = Asset.send(*line)
       end
 
-      limit = attributes.key?(:limit) ? interpret_amount(attributes[:limit]) : MAX_INT64
+      limit = if attributes[:limit].nil?
+                MAX_INT64
+              else
+                interpret_amount(attributes[:limit])
+              end
 
       raise ArgumentError, "Bad :limit #{limit}" unless limit.is_a?(Integer)
 
