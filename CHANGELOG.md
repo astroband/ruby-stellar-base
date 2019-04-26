@@ -6,6 +6,10 @@ file.  This project adheres to [Semantic Versioning](http://semver.org/).
 As this project is pre 1.0, breaking changes may happen for minor version
 bumps.  A breaking change will get clearly notified in this log.
 
+## [0.19.0](https://github.com/stellar/ruby-stellar-base/compare/v0.18.0...v0.19.0)
+### Changed
+- Loosen ActiveSupport to >= 5.0.0
+
 ## [0.18.0](https://github.com/stellar/ruby-stellar-base/compare/v0.17.0...v0.18.0)
 ### Added
 - Update XDR definitions for stellar-core v10.0.0 (introduces Liabilities and other changes to support asset-backed offers as per [CAP-0003 Specification](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0003.md#specification))
