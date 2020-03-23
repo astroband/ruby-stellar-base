@@ -29,10 +29,10 @@ describe Stellar::TransactionBuilder do
         Stellar::TransactionBuilder.new(
           source_account: key_pair,
           sequence_number: 1,
-          timeout: Stellar::TimeBounds.new(min_time: 0, max_time: 0)
+          time_bounds: 600
         )
       }.to raise_error(
-        ArgumentError, "bad :timeout"
+        ArgumentError, "bad :time_bounds"
       )
     end
     it "bad base_fee" do
@@ -61,11 +61,10 @@ describe Stellar::TransactionBuilder do
       builder = Stellar::TransactionBuilder.new(
         source_account: key_pair,
         sequence_number: 1,
-        timeout: 600,
+        time_bounds: Stellar::TimeBounds.new(min_time: 0, max_time: 600),
         base_fee: 200,
         memo: "My test memo"
       )
-      expect(builder.time_bounds).to be_kind_of(Stellar::TimeBounds)
       expect(builder.memo).to eql(Stellar::Memo.new(:memo_text, "My test memo"))
     end
   end
@@ -81,17 +80,84 @@ describe Stellar::TransactionBuilder do
     end
 
     it "bad operation" do
-      expect { builder.add_operation([:bump_sequence, 1]).build() }.to raise_error(
+      expect { 
+        tx = builder.add_operation(
+          [:bump_sequence, 1]
+        ).set_timeout(600).build()
+      }.to raise_error(
         ArgumentError, "bad operation"
       )
     end
 
+    it "raises error for time_bounds not set" do
+      expect {
+        tx = builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+        ).build()
+      }.to raise_error(
+        RuntimeError, 
+        "TransactionBuilder.time_bounds must be set during initialization or by calling set_timeout"
+      )
+    end
+
+    it "raises an error for non-integer timebounds" do
+      builder = Stellar::TransactionBuilder.new(
+        source_account: key_pair,
+        sequence_number: 1,
+        time_bounds: Stellar::TimeBounds.new(min_time: "not", max_time: "integers")
+      )
+      expect {
+        tx = builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+        ).build()
+      }.to raise_error(
+        RuntimeError, "TimeBounds.min_time and max_time must be Integers"
+      )
+    end
+
+    it "raises an error for bad TimeBounds range" do
+      builder = Stellar::TransactionBuilder.new(
+        source_account: key_pair,
+        sequence_number: 1,
+        time_bounds: Stellar::TimeBounds.new(min_time: Time.now.to_i + 10, max_time: Time.now.to_i)
+      )
+      expect {
+        tx = builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+        ).build()
+      }.to raise_error(
+        RuntimeError, "Timebounds.max_time must be greater than min_time"
+      )
+    end
+
+    it "raises an error for max_time in past" do
+      builder = Stellar::TransactionBuilder.new(
+        source_account: key_pair,
+        sequence_number: 1,
+        time_bounds: Stellar::TimeBounds.new(min_time: 0, max_time: Time.now.to_i - 10)
+      )
+      expect {
+        tx = builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+        ).build()
+      }.to raise_error(
+        RuntimeError, "Timebounds.max_time must be in the future"
+      )
+    end
+
+    it "allows max_time to be zero" do
+      tx = builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+      ).set_timeout(0).build()
+      expect(builder.time_bounds.max_time).to eql(0)
+    end
+
     it "creates transaction successfully" do
       bump_op = Stellar::Operation.bump_sequence({"bump_to": 1})
-      tx = builder.add_operation(
+      builder.add_operation(
         Stellar::Operation.bump_sequence({"bump_to": 1})
-      ).build()
-      expect(tx.operations).to eql([bump_op])
+      ).set_timeout(600).build()
+      expect(builder.operations).to eql([bump_op])
     end
   end
 end

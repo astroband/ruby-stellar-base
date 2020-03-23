@@ -25,8 +25,8 @@ module Stellar
 
     def build
       if @time_bounds.nil?
-        raise "@time_bounds must be set during initialization or by calling set_timeout"
-      elsif !@time_bounds.min_time.is_a?(Integer) or !@time_bounds.man_time.is_a?(Integer)
+        raise "TransactionBuilder.time_bounds must be set during initialization or by calling set_timeout"
+      elsif !@time_bounds.min_time.is_a?(Integer) or !@time_bounds.max_time.is_a?(Integer)
         raise "TimeBounds.min_time and max_time must be Integers"
       elsif @time_bounds.max_time != 0 and @time_bounds.min_time > @time_bounds.max_time
         raise "Timebounds.max_time must be greater than min_time"
@@ -56,13 +56,14 @@ module Stellar
         raise ArgumentError, "timeout cannot be negative"
       end
 
-      timestamp = Time.now.to_i + timeout
       if @time_bounds.nil?
-        @time_bounds = Stellar::TimeBounds.new(min_time: 0, max_time: timestamp)
-      elsif timeout == 0
+        @time_bounds = Stellar::TimeBounds.new(min_time: 0, max_time: nil)
+      end
+
+      if timeout == 0
         @time_bounds.max_time = timeout
       else
-        @time_bounds.max_time = timestamp
+        @time_bounds.max_time = Time.now.to_i + timeout
       end
 
       self
