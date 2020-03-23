@@ -28,6 +28,7 @@ module Stellar
     end
 
     def build
+      @sequence_number += 1
       Stellar::Transaction.new(
         source_account: @source_account.account_id,
         fee: @base_fee * @operations.length,
