@@ -33,8 +33,7 @@ module Stellar
       elsif @time_bounds.max_time != 0 and @time_bounds.max_time < Time.now.to_i
         raise "Timebounds.max_time must be in the future"
       end
-      @sequence_number += 1
-      Stellar::Transaction.new(
+      tx = Stellar::Transaction.new(
         source_account: @source_account.account_id,
         fee: @base_fee * @operations.length,
         seq_num: @sequence_number,
@@ -43,12 +42,24 @@ module Stellar
         operations: @operations,
         ext: Stellar::Transaction::Ext.new(0)
       )
+      @sequence_number += 1
+      tx
     end
 
     def add_operation(operation)
       raise ArgumentError, "bad operation" unless operation.is_a? Stellar::Operation
       @operations.push(operation)
       self
+    end
+
+    def clear_operations()
+      @operations.clear
+      self
+    end
+
+    def set_sequence_number(seq_num)
+      raise ArgumentError, "bad sequence number" unless seq_num.is_a?(Integer) and seq_num > 0
+      @sequence_number = seq_num
     end
 
     def set_timeout(timeout)

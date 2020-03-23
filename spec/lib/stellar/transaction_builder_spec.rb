@@ -152,12 +152,71 @@ describe Stellar::TransactionBuilder do
       expect(builder.time_bounds.max_time).to eql(0)
     end
 
+    it "can clear operations" do
+      builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+      ).clear_operations
+      expect(builder.operations).to eql([])
+    end
+
+    it "updates sequence number by 1 per build" do
+      builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+      ).set_timeout(0).build()
+      expect(builder.sequence_number).to eql(2)
+    end
+
+    it "allows sequence number to be updated" do
+      builder.set_sequence_number(5)
+      expect(builder.sequence_number).to eql(5)
+    end
+
+    it "raises an error for bad sequence number" do
+      expect {
+        builder.set_sequence_number(nil) 
+      }.to raise_error(
+        ArgumentError, "bad sequence number"
+      )
+    end
+
     it "creates transaction successfully" do
       bump_op = Stellar::Operation.bump_sequence({"bump_to": 1})
       builder.add_operation(
         Stellar::Operation.bump_sequence({"bump_to": 1})
       ).set_timeout(600).build()
       expect(builder.operations).to eql([bump_op])
+    end
+
+    it "allows for multiple transactions to be created" do
+      first_max_time = Time.now.to_i + 1000
+      bump_op = Stellar::Operation.bump_sequence({"bump_to": 1})
+      builder = Stellar::TransactionBuilder.new(
+        source_account: key_pair,
+        sequence_number: 1,
+        time_bounds: Stellar::TimeBounds.new(min_time: 0, max_time: first_max_time)
+      )
+      tx1 = builder.add_operation(
+        Stellar::Operation.bump_sequence({"bump_to": 1})
+      ).build()
+      expect(tx1.seq_num).to eql(1)
+      expect(tx1.operations).to eql([
+        Stellar::Operation.bump_sequence({"bump_to": 1})
+      ])
+      expect(tx1.time_bounds.max_time).to eql(first_max_time)
+      
+      tx2 = builder.clear_operations.add_operation(
+        Stellar::Operation.bump_sequence({"bump_to": 2})
+      ).set_timeout(0).build()
+      expect(tx2.seq_num).to eql(2)
+      expect(tx2.operations).to eql([
+        Stellar::Operation.bump_sequence({"bump_to": 2})
+      ])
+      expect(tx2.time_bounds.max_time).to eql(0)
+
+      expect(builder.sequence_number).to eql(3)
+      expect(builder.operations).to eql([
+        Stellar::Operation.bump_sequence({"bump_to": 2})
+      ])
     end
   end
 end
