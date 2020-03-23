@@ -2,6 +2,13 @@ require "spec_helper"
 
 describe Stellar::TransactionBuilder do
   let(:key_pair){ Stellar::KeyPair.random }
+  builder = nil
+  before(:each) do
+    builder = Stellar::TransactionBuilder.new(
+      source_account: key_pair,
+      sequence_number: 1
+    )
+  end
 
   describe ".initialize" do
     it "bad source_account" do
@@ -69,26 +76,99 @@ describe Stellar::TransactionBuilder do
     end
   end
 
-  describe ".build" do
-    builder = nil
-
-    before(:each) do
-      builder = Stellar::TransactionBuilder.new(
-        source_account: key_pair,
-        sequence_number: 1
-      )
-    end
-
+  describe ".add_operation" do
     it "bad operation" do
       expect { 
-        tx = builder.add_operation(
+        builder.add_operation(
           [:bump_sequence, 1]
-        ).set_timeout(600).build()
+        )
       }.to raise_error(
         ArgumentError, "bad operation"
       )
     end
 
+    it "returns self" do
+      builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+      ).add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+      )
+    end
+  end
+
+  describe ".clear_operations" do
+    it "can clear operations" do
+      builder = builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+      ).clear_operations
+      expect(builder.operations).to eql([])
+    end
+
+    it "returns self" do
+      builder.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+      ).clear_operations.add_operation(
+          Stellar::Operation.bump_sequence({"bump_to": 1})
+      )
+    end
+  end
+
+  describe ".set_sequence_number" do
+    it "allows sequence number to be updated" do
+      builder.set_sequence_number(5)
+      expect(builder.sequence_number).to eql(5)
+    end
+
+    it "returns self" do
+      builder.set_sequence_number(3).sequence_number
+    end
+
+    it "raises an error for bad sequence number" do
+      expect {
+        builder.set_sequence_number(nil) 
+      }.to raise_error(
+        ArgumentError, "bad sequence number"
+      )
+    end
+  end
+
+  describe ".set_timeout" do
+    it "raises an error for non-integers" do
+      expect {
+        builder.set_timeout(nil)
+      }.to raise_error(
+        ArgumentError, "timeout must be a non-negative integer"
+      )
+    end
+
+    it "raises an error for negative timeouts" do
+      expect {
+        builder.set_timeout(-1)
+      }.to raise_error(
+        ArgumentError, "timeout must be a non-negative integer"
+      )
+    end
+
+    it "returns self" do
+      builder.set_timeout(10).time_bounds
+    end
+  end
+
+  describe ".set_memo" do
+    it "raises an error for bad memos" do
+      expect { 
+        builder.set_memo({"data" => "Testing bad memo"})
+      }.to raise_error(
+        ArgumentError, "bad :memo"
+      )
+    end
+
+    it "works and returns self" do
+      expect(builder.set_memo("Hello").memo).to eql(Stellar::Memo.new(:memo_text, "Hello"))
+    end
+  end
+
+  describe ".build" do
     it "raises error for time_bounds not set" do
       expect {
         tx = builder.add_operation(
@@ -152,31 +232,11 @@ describe Stellar::TransactionBuilder do
       expect(builder.time_bounds.max_time).to eql(0)
     end
 
-    it "can clear operations" do
-      builder.add_operation(
-          Stellar::Operation.bump_sequence({"bump_to": 1})
-      ).clear_operations
-      expect(builder.operations).to eql([])
-    end
-
     it "updates sequence number by 1 per build" do
       builder.add_operation(
           Stellar::Operation.bump_sequence({"bump_to": 1})
       ).set_timeout(0).build()
       expect(builder.sequence_number).to eql(2)
-    end
-
-    it "allows sequence number to be updated" do
-      builder.set_sequence_number(5)
-      expect(builder.sequence_number).to eql(5)
-    end
-
-    it "raises an error for bad sequence number" do
-      expect {
-        builder.set_sequence_number(nil) 
-      }.to raise_error(
-        ArgumentError, "bad sequence number"
-      )
     end
 
     it "creates transaction successfully" do

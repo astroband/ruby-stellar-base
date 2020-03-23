@@ -60,11 +60,12 @@ module Stellar
     def set_sequence_number(seq_num)
       raise ArgumentError, "bad sequence number" unless seq_num.is_a?(Integer) and seq_num > 0
       @sequence_number = seq_num
+      self
     end
 
     def set_timeout(timeout)
-      if timeout < 0
-        raise ArgumentError, "timeout cannot be negative"
+      if !timeout.is_a?(Integer) or timeout < 0
+        raise ArgumentError, "timeout must be a non-negative integer"
       end
 
       if @time_bounds.nil?
@@ -77,6 +78,11 @@ module Stellar
         @time_bounds.max_time = Time.now.to_i + timeout
       end
 
+      self
+    end
+
+    def set_memo(memo)
+      @memo = make_memo(memo)
       self
     end
 
