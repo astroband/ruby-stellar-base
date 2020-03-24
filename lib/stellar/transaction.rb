@@ -4,6 +4,7 @@ module Stellar
     #
     # @see  Stellar::Operation.payment
     def self.payment(attributes={})
+
       make :payment, attributes
     end
 
@@ -104,6 +105,9 @@ module Stellar
     #
     # @return [Stellar::Transaction] the resulting transaction
     def self.make(operation_type, attributes={})
+      Stellar::Deprecation.warn(
+        "Transaction.#{operation_type.to_s} is deprecated. Use Stellar::TransactionBuilder instead."
+      )
       for_account(attributes).tap do |result|
         result.operations << Operation.send(operation_type, attributes)
       end
