@@ -4,7 +4,6 @@ module Stellar
     #
     # @see  Stellar::Operation.payment
     def self.payment(attributes={})
-
       make :payment, attributes
     end
 
