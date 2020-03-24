@@ -10,10 +10,10 @@ module Stellar
       time_bounds: nil, 
       memo: nil
     )
-      raise ArgumentError, "bad :source_account" unless source_account.is_a?(Stellar::KeyPair)
-      raise ArgumentError, "bad :sequence_number" unless sequence_number.is_a?(Integer) && sequence_number > 0
-      raise ArgumentError, "bad :time_bounds" unless time_bounds.is_a?(Stellar::TimeBounds) || time_bounds.nil?
-      raise ArgumentError, "bad :base_fee" unless base_fee.is_a?(Integer) && base_fee >= 100
+      raise ArgumentError, "Bad :source_account" unless source_account.is_a?(Stellar::KeyPair)
+      raise ArgumentError, "Bad :sequence_number" unless sequence_number.is_a?(Integer) && sequence_number >= 0
+      raise ArgumentError, "Bad :time_bounds" unless time_bounds.is_a?(Stellar::TimeBounds) || time_bounds.nil?
+      raise ArgumentError, "Bad :base_fee" unless base_fee.is_a?(Integer) && base_fee >= 100
 
       @source_account = source_account
       @sequence_number = sequence_number
@@ -26,12 +26,10 @@ module Stellar
     def build
       if @time_bounds.nil?
         raise "TransactionBuilder.time_bounds must be set during initialization or by calling set_timeout"
-      elsif !@time_bounds.min_time.is_a?(Integer) or !@time_bounds.max_time.is_a?(Integer)
+      elsif !@time_bounds.min_time.is_a?(Integer) || !@time_bounds.max_time.is_a?(Integer)
         raise "TimeBounds.min_time and max_time must be Integers"
-      elsif @time_bounds.max_time != 0 and @time_bounds.min_time > @time_bounds.max_time
+      elsif @time_bounds.max_time != 0 && @time_bounds.min_time > @time_bounds.max_time
         raise "Timebounds.max_time must be greater than min_time"
-      elsif @time_bounds.max_time != 0 and @time_bounds.max_time < Time.now.to_i
-        raise "Timebounds.max_time must be in the future"
       end
       tx = Stellar::Transaction.new(
         source_account: @source_account.account_id,
@@ -47,7 +45,7 @@ module Stellar
     end
 
     def add_operation(operation)
-      raise ArgumentError, "bad operation" unless operation.is_a? Stellar::Operation
+      raise ArgumentError, "Bad operation" unless operation.is_a? Stellar::Operation
       @operations.push(operation)
       self
     end
@@ -58,14 +56,14 @@ module Stellar
     end
 
     def set_sequence_number(seq_num)
-      raise ArgumentError, "bad sequence number" unless seq_num.is_a?(Integer) and seq_num > 0
+      raise ArgumentError, "Bad sequence number" unless seq_num.is_a?(Integer) && seq_num >= 0
       @sequence_number = seq_num
       self
     end
 
     def set_timeout(timeout)
-      if !timeout.is_a?(Integer) or timeout < 0
-        raise ArgumentError, "timeout must be a non-negative integer"
+      if !timeout.is_a?(Integer) || timeout < 0
+        raise ArgumentError, "Timeout must be a non-negative integer"
       end
 
       if @time_bounds.nil?
@@ -100,7 +98,7 @@ module Stellar
         t, val = *memo
         Memo.new(:"memo_#{t}", val)
       else
-        raise ArgumentError, "bad :memo"
+        raise ArgumentError, "Bad :memo"
       end
     end
 
