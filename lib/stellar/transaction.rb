@@ -93,6 +93,14 @@ module Stellar
     end
 
     #
+    # DEPRECATED
+    #
+    # All methods calling make() have been deprecated in favor of Stellar::TransactionBuilder.
+    # These functions only create single-operation transactions and essentially duplicate the
+    # methods provided by Stellar::Operation. Stellar::TransactionBuilder enables the construction
+    # of multi-operation transactions and mirrors the functionality provided by the Python and 
+    # JavaScript SDKs.
+    #
     # Helper method to create a transaction with a single
     # operation of the provided type.  See class methods
     # on Stellar::Operation for available values for
