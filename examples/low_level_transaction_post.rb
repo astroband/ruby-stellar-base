@@ -33,7 +33,7 @@ raw       = tx.to_xdr
 tx_hash   = Digest::SHA256.digest raw
 signature = master.sign(tx_hash)
 
-env = Stellar::TransactionEnvelope.new
+env = Stellar::TransactionV1Envelope.new
 env.tx = tx
 env.signatures = [Stellar::DecoratedSignature.new({
   hint:master.verify_key.to_bytes[0...4],

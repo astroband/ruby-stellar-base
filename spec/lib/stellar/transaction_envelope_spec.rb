@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Stellar::TransactionEnvelope do
+describe Stellar::TransactionV1Envelope do
   let(:sender)  { Stellar::KeyPair.random }
   let(:receiver){ Stellar::KeyPair.random }
   let(:transaction) do

@@ -79,9 +79,14 @@ module Stellar
   autoload :Memo
   autoload :TimeBounds
   MAX_OPS_PER_TX = 100
+  autoload :TransactionV0
+  autoload :TransactionV0Envelope
   autoload :Transaction
-  autoload :TransactionSignaturePayload
+  autoload :TransactionV1Envelope
+  autoload :FeeBumpTransaction
+  autoload :FeeBumpTransactionEnvelope
   autoload :TransactionEnvelope
+  autoload :TransactionSignaturePayload
   autoload :ClaimOfferAtom
   autoload :CreateAccountResultCode
   autoload :CreateAccountResult
@@ -116,6 +121,8 @@ module Stellar
   autoload :OperationResultCode
   autoload :OperationResult
   autoload :TransactionResultCode
+  autoload :InnerTransactionResult
+  autoload :InnerTransactionResultPair
   autoload :TransactionResult
 end
 module Stellar
