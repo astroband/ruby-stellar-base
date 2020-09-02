@@ -1,5 +1,6 @@
-# Stellar::Base
+**`stellar-base` is now maintained in the [astroband/ruby-stellar-sdk](https://github.com/astroband/ruby-stellar-sdk) repository.**
 
+----
 [![Build Status](https://travis-ci.org/stellar/ruby-stellar-base.svg)](https://travis-ci.org/stellar/ruby-stellar-base)
 [![Code Climate](https://codeclimate.com/github/stellar/ruby-stellar-base/badges/gpa.svg)](https://codeclimate.com/github/stellar/ruby-stellar-base)
 
